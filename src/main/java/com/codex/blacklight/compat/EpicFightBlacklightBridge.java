@@ -2,8 +2,11 @@ package com.codex.blacklight.compat;
 
 import com.codex.blacklight.city.HydraTransport;
 import com.codex.blacklight.registry.ModAttachments;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -34,7 +37,7 @@ public final class EpicFightBlacklightBridge {
         // mode event afterwards, and only for Blacklight's active Prototype form.
         try {
             Object patch = invokeNoArgs(event, "getPlayerPatch");
-            Object original = invokeNoArgs(patch, "getOriginal");
+            Object original = originalEntity(patch);
             if (original instanceof Player player
                     && isPrototypeMode(player)
                     && !HydraTransport.active(player)) {
@@ -72,6 +75,18 @@ public final class EpicFightBlacklightBridge {
         } catch (Throwable ignored) {
             // This is a visual compatibility adjustment; never interrupt input.
         }
+    }
+
+    /**
+     * EntityPatch also declares client-only signatures such as
+     * isOutlineVisible(LocalPlayer). A dedicated server cannot list those
+     * methods, so resolve only the erased getOriginal() accessor.
+     */
+    static Object originalEntity(Object patch) throws Throwable {
+        if (patch == null) throw new NullPointerException("getOriginal target");
+        return MethodHandles.publicLookup()
+                .findVirtual(patch.getClass(), "getOriginal", MethodType.methodType(Entity.class))
+                .invoke(patch);
     }
 
     private static boolean isPrototypeMode(Object original) {
