@@ -24,6 +24,7 @@ public final class EpicFightBlacklightBridge {
             Method dispatch = findCompatibleMethod(hook == null ? null : hook.getClass(),
                     "postWithListener", event, listener);
             if (dispatch == null) throw new NoSuchMethodException("postWithListener(2 args)");
+            dispatch.setAccessible(true);
             posted = dispatch.invoke(hook, event, listener);
         } catch (Throwable error) {
             throw new IllegalStateException("Blacklight/Epic Fight event dispatch failed", unwrap(error));
