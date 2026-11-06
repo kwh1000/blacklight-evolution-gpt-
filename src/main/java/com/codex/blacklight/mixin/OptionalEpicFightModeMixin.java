@@ -23,6 +23,7 @@ public abstract class OptionalEpicFightModeMixin {
                     remap = false),
             require = 0,
             remap = false)
+    @Coerce
     private Object blacklight$gateEpicFightModeEvent(
             @Coerce Object hook, @Coerce Object event, @Coerce Object listener) {
         return EpicFightBlacklightBridge.postEpicFightModeEvent(hook, event, listener);
